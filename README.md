@@ -182,6 +182,54 @@ full response, while negative perturbations fail immediately. The failure is
 triggered by discrete tie-breaking at the reference point, not by a large
 magnitude threshold.
 
+## 6.2 Stage V6-r1: Branch-Preservation Certificate
+
+Status: complete locally; repository reproduction package pending.
+
+Results:
+
+- 11 inputs and 33 native runs.
+- Work formulas for 4 candidate parents: all matched exactly.
+- Parent-selection predictions for the following 10 inputs: all correct.
+- No observed response or coloring effect from diagnostic switches.
+- False positives where "branch condition + frozen UMC response preservation"
+  incorrectly predicted preservation: `0`.
+
+V5 mechanism result: the reference point has four tied candidate parents. The
+perturbation splits them into two groups, and the winner inside each group is
+then determined by hash order.
+
+Core V6-r1 certificate: when the current candidate set, work formulas, and hash
+ordering are preserved, the condition for the original parent `ecc1...` to keep
+winning reduces to the single inequality
+
+```text
+w_7a9c... >= w_9aa8...
+```
+
+In the original state, both work values are `527,474`, exactly on the equality
+boundary.
+
+| Input | Work difference | Branch prediction | Native full response |
+| --- | ---: | --- | --- |
+| Original state | `0` | original parent preserved | baseline |
+| `p3 +31` | `+31` | original parent preserved | preserved |
+| `p3 -31` | `-31` | parent switches | changed |
+
+Conclusion: finite preservation along the kernel direction can be predicted in
+advance by the parent-selection inequality. The formula comes from native work
+accumulation relations and was then frozen for prediction; it was not fitted to
+the later outcomes.
+
+Boundaries:
+
+- This is a conditional local parent-selection certificate.
+- Full-response preservation after combining the certificate with the UMC
+  kernel has only been validated on these samples so far.
+- The formula's applicability is still checked by native recomputation, so it
+  has not yet saved computation.
+- The kernel dimension of the full consensus map has not been established.
+
 ## 7. Stage D: Valid-Block Constraints and Full Consensus Check
 
 Status: not started.
@@ -243,7 +291,7 @@ This repository does not currently prove that:
   remained fixed,
 - the result implies a consensus optimization,
 - `G` or `d_c` has been constructed,
-- a fiber-bundle feasibility layer is justified,
+- a fiber-bundle realizability layer is justified,
 - the `47`-dimensional kernel remains a `47`-dimensional kernel under the full
   recolored map; that dimension was not recomputed in this round.
 
@@ -293,6 +341,8 @@ dagknight-fiber-probe/
 | B | Local complete; repo package pending | Fixed-coloring UMC conditional kernel |
 | C | Local complete; repo package pending | Exact `bits` transfer and native conflict-zone recoloring |
 | C+ | Local complete; repo package pending | `p3` boundary audit: positive preserved, negative failed |
+| V5 | Local complete; repo package pending | `p3` one-sided mechanism: tie plus hash tie-break |
+| V6-r1 | Local complete; repo package pending | Branch-preservation certificate: one inequality predicts parent selection |
 | D | Not started | Valid-block constraints and full consensus check |
 
 ## 15. One-Sentence Summary
@@ -306,5 +356,11 @@ and `44` constructible two-block exchange directions. Under native recoloring,
 one-sided structure: positive perturbations preserved the full response in
 `44/44` trials, while negative perturbations preserved it in `0/44` trials, and
 a negative transfer of only `1` unit of work already triggered a coloring
-structure switch in the `k=3` subgroup. The external reproduction package is
-still pending.
+structure switch in the `k=3` subgroup. V5 identified the mechanism: four
+candidate parents are tied at the reference point, the perturbation splits them
+into two groups, and hash order decides the winner inside each group. V6-r1
+reduces the preserved branch condition to one checkable inequality,
+`w_7a9c... >= w_9aa8...`; the original state has both values tied at `527,474`,
+`p3 +31` preserves the parent, and `p3 -31` switches it. The next 10
+parent-selection predictions were all correct, with `0` false preservation
+predictions. The external reproduction package is still pending.
