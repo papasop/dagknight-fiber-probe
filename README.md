@@ -28,7 +28,8 @@ full-consensus proof.
 The conditional UMC kernel exists locally, is directional under native
 recoloring, is eliminated by cross-k constraints in new DAG samples, and has a
 parent-selection boundary that can be predicted by a frozen work inequality;
-G and d_c have not been constructed.
+operational root-maintenance work can be reduced in tested samples, but CPU
+speedup is not established. G and d_c have not been constructed.
 
 ## 2. How to Read This Repository
 
@@ -50,7 +51,11 @@ Read §6.2.
 
 Read §6.3, §6.4, §6.5, and §6.6.
 
-### 2.5 If you want to know what is not proven
+### 2.5 If you want to know whether the diagnostics reduce operations
+
+Read §6.7.
+
+### 2.6 If you want to know what is not proven
 
 Read §11.1 and §11.2.
 
@@ -109,6 +114,10 @@ The test is therefore about preservation of numerical margins and related work
 coordinates. It is not merely detecting a small flat region in Boolean vote
 outputs.
 
+At fixed k=16, the UMC response is a coarse-grained function of 92 work
+coordinates. A nontrivial kernel is therefore expected; the diagnostic question
+is its dimension and interpretation.
+
 Results:
 
 - Python integer replay is consistent with the archived native results:
@@ -144,6 +153,10 @@ Status: complete locally; repository reproduction package pending.
 This stage tests exact discrete work transfer and native conflict-zone
 recoloring. It should not be described as removing all conditioning: historical
 header metadata remains fixed.
+
+Under fixed coloring, 94/94 finite displacements passed. Under native
+recoloring, 22/24 kernel candidates preserved the full response, with the
+remaining 2 failures localized in the p3 direction.
 
 Results:
 
@@ -323,6 +336,24 @@ Conclusion: the target transfer changes only k=1, not other k. The control
 transfer changes all k. The sham changes nothing. The k=1 mechanism from V8+ is
 supported under native recoloring on the tested cases.
 
+## 6.7 Stage V7-V9: Operational Reduction and Cost Attribution
+
+Status: complete locally; repository reproduction package pending.
+
+Results:
+
+- Root flips reduced from 74/30 to 0 in the tested samples.
+- First DAG baseline: 680 -> 606 root-maintenance flips, a 10.88% reduction.
+- Second DAG all samples: 120 -> 90 root-maintenance flips, a 25% reduction.
+- Response, coloring, parent selection, and ordering remained identical.
+- CPU time reduction: DAG 1 -0.66%, DAG 2 -1.75%; both intervals include zero.
+- Cost attribution: saved root-maintenance work, about 0.290 ms, is the same
+  order as the added topology checks, about 0.318 ms.
+
+Conclusion: the operational reduction is real and reproducible, but CPU speedup
+is not established. The reduction is an implementation-layer candidate, not a
+consensus-layer change.
+
 ## 7. Stage D: Valid-Block Constraints and Full Consensus Check
 
 Status: not started.
@@ -449,6 +480,7 @@ metadata.
 | V8    | Local complete; repo package pending | Which k constraints eliminate the kernel |
 | V8+   | Local complete; repo package pending | k=1 not non-replaceable in all samples; vote-sign mechanism |
 | V9    | Local complete; repo package pending | Native k=1 mechanism verification: target changes only k=1 |
+| V7-V9 ops | Local complete; repo package pending | Operational reduction and cost attribution |
 | D     | Not started                       | Valid-block constraints and full consensus check |
 
 ## 14. Summary
@@ -466,7 +498,9 @@ one-sided structure: positive perturbations preserved the full response in
 negative transfer of only 1 unit of work already triggered a coloring structure
 switch in the k=3 subgroup. Cross-k shared directions did not reproduce on
 three new DAGs, and the k=1 mechanism is sample-specific rather than universal.
-The external reproduction package is still pending.
+Operational root-maintenance flips were reduced by 10.88% to 25% in tested
+samples, but CPU speedup is not established. The external reproduction package
+is still pending.
 
 ### 14.2 Detailed Summary
 
@@ -484,5 +518,7 @@ kernel does not reproduce on three new DAGs; V8 located which k constraints
 eliminate the kernel; V8+ showed that k=1 is not non-replaceable in all samples,
 but has a vote-sign mechanism in the second sample; V9 verified the k=1
 mechanism under native recoloring, with target transfers changing only k=1,
-controls changing all k, and sham changing nothing. The external reproduction
-package is still pending.
+controls changing all k, and sham changing nothing. The V7-V9 operational audit
+removed root-maintenance flips in tested samples while preserving response,
+coloring, parent selection, and ordering, but its measured CPU-time intervals
+still include zero. The external reproduction package is still pending.
