@@ -1,206 +1,197 @@
-# realizability-fiber
+# dagknight-fiber-probe
 
-A fiber-bundle realizability framework applied to Kaspa DAGKnight DAG data.
+## 0. What This Is
 
-This repository is an independent verification sandbox for a layered
-consensus-structure program. It does **not** modify DAGKnight source code.
-It only constructs a response map from DAG states, computes its differential,
-and tests whether the kernel is nontrivial.
+`dagknight-fiber-probe` is a diagnostic repository for studying whether
+DAGKnight consensus-response computations contain nontrivial kernel directions:
+directions in input or response space that preserve the measured consensus
+response under a fixed set of constraints.
 
----
+The current focus is not mainnet performance, block validity, or consensus
+optimization. The focus is kernel diagnostics: identify, replay, and interpret
+response-preserving directions under controlled conditions.
 
-## 0. Motivation
+## 1. Motivation
 
-DAGKnight infers network delay from k-cluster structure. This inference is a
-response map
+DAGKnight computes consensus behavior from structured DAG data, coloring,
+parent selection, ordering metadata, blue work, root work, and voting margins.
+If the response map has a nontrivial kernel, then there may be internal
+redistribution directions that leave selected consensus responses unchanged.
 
-    R_Pi : M -> O_Pi
+This repository tests that possibility in stages:
 
-where M is the DAG state space and O_Pi is the response space. Any such map
-has a kernel ker DR_Pi. Directions in this kernel are invisible to the
-response: DAG changes along them do not change the inferred delay.
+- first under a simple time-translation kernel,
+- then under a fixed-coloring UMC conditional response kernel,
+- later, if the evidence survives, under less constrained consensus settings.
 
-The fiber-bundle realizability framework treats this kernel as the vertical
-subbundle of a response bundle. The three modifications below ask, in order:
-
-1. Does the kernel exist and is it nontrivial?
-2. Is there a critical scale at which the response structure becomes rank-one?
-3. Does that rank-one branch carry a zero-cost evolution?
-
----
-
-## 1. Modification 1: Kernel Diagnosis
+## 2. Modification 1: Kernel Diagnostics
 
 ### Goal
 
-Construct the response map R_Pi from DAG states, compute its differential
-DR_Pi, and compute ker DR_Pi.
+Detect and explain kernel directions in DAGKnight-style response maps.
 
 ### Object
 
-    ker DR_Pi != {0}
+The object of study is a conditional response map derived from native replay
+data and structured consensus-response features.
 
-### Logic Layer
+### Logical Layer
 
-Structural identification. This is an algebraic fact, not an independent
-assumption.
-
-### Deliverables
-
-- `dag_state(block, dag)` -> state vector x
-- `response_map(x, params)` -> response vector o
-- `numerical_jacobian(response_map, x, params)` -> DR_Pi
-- `kernel_basis(J, tol)` -> basis of ker DR_Pi, kernel dimension
-- Report: kernel dimension distribution over >= 100 blocks
-
-### Success Criterion
-
-    dim ker DR_Pi > 0
-
-on a non-negligible fraction of DAG states.
-
-### Current Status
-
-- Simulated run: n=32, m=62, rank=31, kernel_dimension=1
-- tests_passed=16
-- anchored_kernel_dimension=0
-- Result: PASS
-
----
-
-## 2. Modification 2: Critical Scale Selection
-
-### Goal
-
-Assuming Modification 1 succeeds, construct a Lorentzian quadratic form G on
-the kernel direction and select the critical scale d_c.
-
-### Object
-
-    d_c(G) = alpha * sqrt(-1 / det G)
-    D = d_c I
-
-### Logic Layer
-
-Independent selection. This is not a consequence of Modification 1.
+This is a diagnostic layer over replayed consensus data. It is not a
+replacement for consensus logic, and it does not claim that every kernel
+direction corresponds to a valid on-chain block perturbation.
 
 ### Deliverables
 
-- `build_G_from_kernel(kernel_basis)` -> Lorentzian G
-- `critical_scale(G)` -> d_c
-- `critical_branch(D, d_c)` -> rank-one generator
-- Report: existence and uniqueness of d_c on simulated data
+- reproducible replay checks,
+- rank and kernel-dimension reports,
+- finite-displacement tests in positive and negative kernel directions,
+- attribution of kernel basis directions,
+- interpretable exchange directions when available.
 
-### Success Criterion
+### Success Criteria
 
-    D = d_c I
-    rank B_c = 1
-    Im B_c subset N(G)
+A diagnostic stage is considered successful only when:
 
-### Current Status
-
-- Not implemented. Waiting for Modification 1 stability.
-
----
-
-## 3. Modification 3: Zero-Cost Evolution
-
-### Goal
-
-Assuming Modifications 1 and 2 succeed, verify the critical G-null flow.
-
-### Object
-
-    B_c = J_G - d_c I = -2 d_c Pi_-
-    rank B_c = 1
-    Im B_c subset N(G)
-
-### Logic Layer
-
-Conditional dynamical consequence. Requires Law I, Law II, Law III.
-
-### Deliverables
-
-- `critical_generator(J_G, d_c)` -> B_c
-- `null_image(B_c, G)` -> Im B_c, check subset N(G)
-- `null_flow(B_c, G, z0, u)` -> trajectory z(tau)
-- Report: stability, safety, and zero-cost property
-
-### Success Criterion
-
-    z_dot in Im B_c  =>  z_dot^T G z_dot = 0
-
-along a nonconstant trajectory.
+- native replay is consistent,
+- rank and kernel dimensions are stable across tolerances,
+- finite displacements remain response-preserving,
+- kernel directions admit a clear interpretation,
+- the limitations of the conditioning assumptions are explicitly stated.
 
 ### Current Status
 
-- Not implemented. Depends on Modifications 1 and 2.
+#### Stage 1: Time-Translation Kernel (Complete)
 
----
+- `n=32`, `m=62`, `rank=31`, `kernel_dimension=1`
+- Kernel direction: common timestamp translation
+- `100/100` seeds consistent
+- Kernel dimension after fixing the time anchor: `0/100`
 
-## 4. Logical Dependencies
+#### Stage 2: UMC Conditional Response Kernel (Complete)
 
-    Modification 1  ->  ker DR_Pi
-    Modification 2  ->  d_c, D = d_c I
-    Modification 3  ->  B_c = -2 d_c Pi_-, Im B_c subset N(G)
+- Native replay: `246/246` consistent
+- Fixed `k=16`: `x=92`, `response=271`, `rank=45`, `kernel=47`
+- Three tolerance levels: kernel dimension remains `47`
+- Positive and negative finite displacements along main kernel directions:
+  `94/94` passed
+- Cross-`k=0..40` margin-preserving subkernel: `6` dimensions
+- Positive and negative finite displacements in the subkernel: `12/12` passed
+- Interpretable two-block exchange directions: `44`
 
-    Mod 1 is a prerequisite for Mod 2.
-    Mod 2 is a prerequisite for Mod 3.
-    Mod 3 cannot be tested directly.
+#### Stage 3: Remove Fixed Coloring (Todo)
 
----
+The next target is to test whether the kernel survives beyond the current
+conditioning assumptions.
 
-## 5. What This Repository Does Not Do
+Current conditioning:
 
-- It does not fork DAGKnight source code.
-- It does not modify Kaspa consensus.
-- It does not assume G, d_c, or Law I/II/III in Modification 1.
-- It does not claim mainnet readiness.
-- It does not claim a physical clock, time orientation, or global geometry.
+- fixed coloring,
+- fixed parent selection,
+- fixed ordering metadata.
 
----
+## 3. Modification 2: Critical Scale Selection
 
-## 6. Repository Structure
+This stage is not complete.
 
-    realizability-fiber/
-    ├── README.md
-    ├── notebooks/
-    │   └── mod1_kernel_probe.ipynb
-    ├── src/
-    │   ├── dag_state.py
-    │   ├── response_map.py
-    │   ├── jacobian.py
-    │   └── kernel_basis.py
-    ├── results/
-    │   ├── kernel_dim_distribution.csv
-    │   └── kernel_basis_examples.json
-    ├── docs/
-    │   ├── fiber_bundle_mapping.md
-    │   └── dagknight_response_map.md
-    └── LICENSE
+The intended question is whether kernel behavior changes at identifiable
+critical scales of DAG structure, voting margin, or selected `k` values.
 
----
+## 4. Modification 3: Zero-Cost Evolution
 
-## 7. Roadmap
+This stage is not complete.
 
-| Phase | Action | Status |
-|---|---|---|
-| 1 | Run Modification 1 on simulated DAG | PASS |
-| 2 | Expand to 100+ seeds | TODO |
-| 3 | Record kernel basis vectors | TODO |
-| 4 | Import simpa DAG output | TODO |
-| 5 | Implement Modification 2 | TODO |
-| 6 | Implement Modification 3 | TODO |
-| 7 | Fork rusty-kaspa dk branch | WAITING |
+The intended question is whether a zero-cost property can be defined for
+response-preserving evolution directions, without overstating the result as a
+valid chain transition or consensus optimization.
 
----
+## 5. Logical Dependencies
 
-## 8. One-Line Summary
+The current evidence depends on the following sequence:
 
-    Mod 1: find the kernel.
-    Mod 2: choose the critical scale.
-    Mod 3: realize the zero-cost flow.
+1. Native replay consistency.
+2. Construction of the conditional response matrix.
+3. Rank and kernel computation.
+4. Finite-displacement validation.
+5. Cross-`k` margin-preserving subkernel extraction.
+6. Kernel-basis attribution.
+7. Interpretation of two-block exchange directions.
 
-    Mod 1 is a prerequisite for Mod 2.
-    Mod 2 is a prerequisite for Mod 3.
-    Mod 3 cannot be tested directly.
+Later claims require earlier stages to remain valid when conditioning
+assumptions are relaxed.
+
+## 6. Physical Interpretation of Kernel Directions
+
+In the UMC conditional kernel, the observed kernel directions correspond to
+redistribution directions that:
+
+- increase the contribution of block A,
+- decrease the contribution of block B,
+- preserve voting margins,
+- preserve final scores,
+- preserve total work,
+- preserve root work.
+
+Under fixed-coloring conditions, this means there are work-redistribution
+directions along which the UMC voting response remains unchanged.
+
+This is a conditional diagnostic result. It is not yet a proof that the same
+directions survive in the full unconstrained consensus computation.
+
+## 7. Not Proven
+
+This repository does not currently prove that:
+
+- the result holds on mainnet data,
+- the Rust native code has been rerun in the current stage,
+- the perturbations correspond to valid on-chain blocks,
+- the kernel survives after fixed coloring is removed,
+- the result implies a consensus optimization,
+- `G` or `d_c` has been constructed.
+
+These are open boundaries, not hidden assumptions.
+
+## 8. What This Repository Does Not Do
+
+This repository does not:
+
+- replace DAGKnight consensus logic,
+- modify rusty-kaspa consensus behavior,
+- claim a production optimization,
+- claim a live network exploit,
+- claim that kernel directions are automatically valid block operations,
+- construct a full fiber bundle model of DAGKnight consensus.
+
+Terms such as rank-one generator, kernel, image, and `Im B_c` are used in their
+linear-algebraic sense.
+
+## 9. Repository Structure
+
+The repository is expected to contain:
+
+- replay scripts and native replay summaries,
+- response-matrix construction code,
+- rank and kernel diagnostics,
+- finite-displacement validation scripts,
+- kernel-basis attribution artifacts,
+- cross-`k` subkernel reports,
+- documentation of assumptions and non-claims.
+
+## 10. Roadmap
+
+| Stage | Status | Description |
+| --- | --- | --- |
+| 1 | Complete | Time-translation kernel |
+| 2 | Complete | 100-seed consistency check |
+| 3 | Complete | Kernel-basis attribution |
+| 4 | Complete | UMC conditional kernel |
+| 5 | Todo | Remove fixed coloring |
+| 6 | Todo | Test full consensus response |
+| 7 | Waiting | Decide whether a fiber-bundle feasibility layer is justified |
+
+## 11. One-Sentence Summary
+
+Under fixed-coloring UMC conditions, DAGKnight response diagnostics exhibit a
+stable `47`-dimensional kernel, including a `6`-dimensional margin-preserving
+subkernel and `44` interpretable two-block exchange directions; this is a
+controlled conditional result, not yet a mainnet or full-consensus proof.
