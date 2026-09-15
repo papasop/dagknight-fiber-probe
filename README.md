@@ -52,7 +52,7 @@ Read §6.3, §6.4, §6.5, and §6.6.
 
 ### 2.5 If you want to know what is not proven
 
-Read §11 and §12.
+Read §11.1 and §11.2.
 
 ## 3. Reproducibility Status
 
@@ -254,17 +254,10 @@ Results on three new DAGs:
 | 64 blocks| 35        | 6                      | 0                                              |
 | 67 blocks| 20        | 6                      | 0                                              |
 
-Two conclusions:
-
-- Fixed-k conditional response kernels still exist: all three new DAGs show
-  nonzero kernel dimensions.
-- Cross-k shared nonzero directions did not reproduce: all three sufficient-
-  constraint matrices are full column rank, with minimum singular values well
-  above tolerance.
-
-Conclusion: the cross-k kernel does not have generality evidence. The
-single-k kernel is more robust than the cross-k kernel. This is a negative
-result, and it is reported as such. `CROSS_DAG_INCONCLUSIVE`.
+Conclusion: fixed-k conditional kernels still appear in all three new DAGs, but
+cross-k shared nonzero directions did not reproduce. The sufficient-constraint
+matrices are full column rank, with minimum singular values well above
+tolerance. This negative result is reported as `CROSS_DAG_INCONCLUSIVE`.
 
 ## 6.4 Stage V8: Which k Constraints Eliminate the Kernel
 
@@ -278,11 +271,10 @@ Using exact rational elimination, not floating-point tolerance.
 | 2026091602 | 6               | {1, 2, 3, 16}                       |
 | 2026091603 | 6               | {1, 2, 16}                          |
 
-The eliminating sets are not guaranteed minimal.
-
 Interpretation: changes invisible at a single k can be distinguished by the
-response constraints of other k. Conclusion is limited to the declared
-coordinates and frozen branch constraints.
+response constraints of other k. The eliminating sets are not guaranteed
+minimal, and the conclusion is limited to the declared coordinates and frozen
+branch constraints.
 
 ## 6.5 Stage V8+: Which k Is Not Replaceable
 
@@ -303,11 +295,9 @@ transfer
 keeps total work unchanged, satisfies all other frozen-k constraints, but
 changes w_A - w_B at k=1, eliminating the last kernel dimension. At k=2 and
 k=16, both blocks vote in the same direction, so the transfer cancels in the
-relevant sums.
-
-Key point: different k values have different vote-discrimination power. This is
-not evidence that the number 1 has universal critical meaning, and it does not
-establish a mathematical link to the paper's K=1.
+relevant sums. Different k values have different vote-discrimination power;
+this does not give k=1 universal critical meaning or establish a link to the
+paper's K=1.
 
 ## 6.6 Stage V9: Native k=1 Mechanism Verification
 
@@ -386,7 +376,9 @@ They are not implemented by the current kernel diagnostics, and the existence
 of the kernel does not by itself construct G, d_c, or any downstream dynamical
 structure.
 
-## 11. Not Proven
+## 11. Boundaries
+
+### 11.1 Not Proven
 
 This repository does not currently prove that:
 
@@ -405,7 +397,7 @@ This repository does not currently prove that:
 
 These are open boundaries, not hidden assumptions.
 
-## 12. What This Repository Does Not Do
+### 11.2 What This Repository Does Not Do
 
 This repository does not:
 
@@ -416,7 +408,7 @@ This repository does not:
 - claim that kernel directions are automatically valid block operations,
 - claim that all kernel directions are two-block exchanges.
 
-## 13. Expected Repository Structure
+## 12. Expected Repository Structure
 
 The repository still needs the reproduction package. The expected structure is:
 
@@ -443,7 +435,7 @@ The repository still needs the reproduction package. The expected structure is:
 including topology, historical parent selection, coloring, and ordering
 metadata.
 
-## 14. Roadmap
+## 13. Roadmap
 
 | Stage | Status                            | Description |
 |-------|-----------------------------------|-------------|
@@ -459,7 +451,9 @@ metadata.
 | V9    | Local complete; repo package pending | Native k=1 mechanism verification: target changes only k=1 |
 | D     | Not started                       | Valid-block constraints and full consensus check |
 
-## 15. One-Sentence Summary
+## 14. Summary
+
+### 14.1 One-Paragraph Summary
 
 Local diagnostics have found a conditional UMC response kernel beyond
 timestamp-origin freedom: in one fixed-coloring baseline context, the 271 x 92
@@ -470,10 +464,16 @@ kernel candidates preserved the full response, while the p3 direction has a
 one-sided structure: positive perturbations preserved the full response in
 44/44 trials, negative perturbations preserved it in 0/44 trials, and a
 negative transfer of only 1 unit of work already triggered a coloring structure
-switch in the k=3 subgroup. V5 identified the mechanism: four candidate parents
-are tied at the reference point, the perturbation splits them into two groups,
-and hash order decides the winner inside each group. V6-r1 reduces the preserved
-branch condition to one checkable inequality,
+switch in the k=3 subgroup. Cross-k shared directions did not reproduce on
+three new DAGs, and the k=1 mechanism is sample-specific rather than universal.
+The external reproduction package is still pending.
+
+### 14.2 Detailed Summary
+
+V5 identified the p3 mechanism: four candidate parents are tied at the
+reference point, the perturbation splits them into two groups, and hash order
+decides the winner inside each group. V6-r1 reduces the preserved branch
+condition to one checkable inequality,
 
     w_7a9c... >= w_9aa8...
 
