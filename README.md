@@ -23,7 +23,38 @@ response kernel related to UMC voting that is not just the timestamp-origin
 freedom. This is not yet a mainnet result, a valid-block transformation, or a
 full-consensus proof.
 
-## 1. Reproducibility Status
+## 1. Current Status
+
+The conditional UMC kernel exists locally, is directional under native
+recoloring, is eliminated by cross-k constraints in new DAG samples, and has a
+parent-selection boundary that can be predicted by a frozen work inequality;
+G and d_c have not been constructed.
+
+## 2. How to Read This Repository
+
+This README is organized by question rather than only by time order.
+
+### 2.1 If you want to know whether the kernel exists
+
+Read §4 and §5.
+
+### 2.2 If you want to know whether the kernel survives native recoloring
+
+Read §6 and §6.1.
+
+### 2.3 If you want to know whether parent selection can be predicted
+
+Read §6.2.
+
+### 2.4 If you want to know whether the kernel survives across k
+
+Read §6.3, §6.4, §6.5, and §6.6.
+
+### 2.5 If you want to know what is not proven
+
+Read §11 and §12.
+
+## 3. Reproducibility Status
 
 The experiments described here are locally complete, including native Rust
 recoloring, but the repository reproduction package has not yet been published.
@@ -43,42 +74,6 @@ Until those materials are committed, the correct status is:
     Local experiment complete, including native recoloring;
     repository reproduction package pending.
 
-## 2. Motivation
-
-DAGKnight computes consensus behavior from structured DAG data, coloring,
-parent selection, ordering metadata, blue work, root work, and voting margins.
-Any coarse-grained response map has a kernel. The diagnostic question is not
-whether the kernel exists, but whether it is nontrivial, whether it survives
-finite displacements, and whether its directions have a coordinate-level
-interpretation.
-
-This repository tests that question in stages:
-
-- first under a simple time-difference response where timestamp-origin freedom
-  is expected,
-- then under a fixed-coloring UMC conditional response,
-- later, under exact bits transfer and native conflict-zone recoloring,
-- finally, under valid-block constraints and fuller consensus checks.
-
-## 3. Tested Coordinates and Response Map
-
-The currently reported UMC conditional test uses:
-
-- x: 92 positive real-valued relaxed work coordinates for participating voting
-  blocks,
-- unit convention: each coordinate is divided by the frozen original conflict
-  root work,
-- R_16: all recorded per-vote decision margins for six subgroups at k=16, final
-  scores, total work, and root work,
-- fixed inputs: topology, historical parent selection, coloring, ordering
-  metadata, and archived context values,
-- local validity region: the branch where vote signs and discrete ordering
-  choices remain unchanged.
-
-The test is therefore about preservation of numerical margins and related work
-coordinates. It is not merely detecting a small flat region in Boolean vote
-outputs.
-
 ## 4. Stage A: Time-Difference Response and 100-Seed Check
 
 Status: local experiment complete; repository reproduction package pending.
@@ -96,6 +91,23 @@ This stage identifies and then removes the expected timestamp-origin freedom.
 ## 5. Stage B: Fixed-Coloring UMC Conditional Kernel
 
 Status: local experiment complete; repository reproduction package pending.
+
+Tested coordinates and response map:
+
+- x: 92 positive real-valued relaxed work coordinates for participating voting
+  blocks,
+- unit convention: each coordinate is divided by the frozen original conflict
+  root work,
+- R_16: all recorded per-vote decision margins for six subgroups at k=16, final
+  scores, total work, and root work,
+- fixed inputs: topology, historical parent selection, coloring, ordering
+  metadata, and archived context values,
+- local validity region: the branch where vote signs and discrete ordering
+  choices remain unchanged.
+
+The test is therefore about preservation of numerical margins and related work
+coordinates. It is not merely detecting a small flat region in Boolean vote
+outputs.
 
 Results:
 
