@@ -157,6 +157,31 @@ Results:
 Conclusion: the conditional kernel mostly survives native recoloring, but it
 has a localized failure boundary in the `p3` direction.
 
+## 6.1 Stage C+: `p3` Boundary Audit
+
+Status: complete locally; repository reproduction package pending.
+
+Results:
+
+- `p3` positive direction: 22 magnitudes, two repeats each, `44/44` preserved
+  the full response.
+- `p3` negative direction: the same magnitudes, two repeats each, `0/44`
+  preserved the full response.
+- Non-kernel controls: `0/4` preserved the full response.
+- Tested integer-work magnitudes: `1..16`, `32`, `64`, `128`, `256`, `527`,
+  and `5274`.
+- A negative transfer of only `1` unit of work already triggered a structural
+  change.
+- In the same `k=3` subgroup, internal parent selection and blue/red membership
+  changed, and the score moved from `-42,893,983` to `-43,988,761`.
+- Final decision, native rank, and selected parent remained unchanged in all
+  cases.
+
+Conclusion: `p3` has a one-sided boundary. Positive perturbations preserve the
+full response, while negative perturbations fail immediately. The failure is
+triggered by discrete tie-breaking at the reference point, not by a large
+magnitude threshold.
+
 ## 7. Stage D: Valid-Block Constraints and Full Consensus Check
 
 Status: not started.
@@ -191,6 +216,10 @@ In the fixed-coloring UMC conditional kernel, some kernel directions can be
 interpreted as transferring work contribution between two blocks while
 preserving recorded margins, final scores, total work, and root work.
 
+Under native recoloring, the positive `p3` direction still preserves this
+work-coordinate interpretation. The negative `p3` direction triggers a coloring
+structure switch and no longer preserves the full response.
+
 Other directions are more general multiblock linear cancellations. The current
 evidence establishes a conditional cancellation relation in work coordinates;
 it does not establish a physical process, a valid block transformation, or an
@@ -209,8 +238,9 @@ This repository does not currently prove that:
 
 - the result holds on mainnet data,
 - the perturbations correspond to valid on-chain blocks,
-- the kernel survives after fixed coloring or historical metadata assumptions
-  are removed,
+- the kernel survives after historical header metadata assumptions are fully
+  removed; Stage C tested native recoloring, but historical header metadata
+  remained fixed,
 - the result implies a consensus optimization,
 - `G` or `d_c` has been constructed,
 - a fiber-bundle feasibility layer is justified,
@@ -262,6 +292,7 @@ dagknight-fiber-probe/
 | A | Local complete; repo package pending | Time-difference response and 100-seed check |
 | B | Local complete; repo package pending | Fixed-coloring UMC conditional kernel |
 | C | Local complete; repo package pending | Exact `bits` transfer and native conflict-zone recoloring |
+| C+ | Local complete; repo package pending | `p3` boundary audit: positive preserved, negative failed |
 | D | Not started | Valid-block constraints and full consensus check |
 
 ## 15. One-Sentence Summary
@@ -271,8 +302,9 @@ timestamp-origin freedom: in one fixed-coloring baseline context, the `271 x 92`
 Jacobian has a `47`-dimensional kernel stable across three numerical
 tolerances, including a `6`-dimensional sufficient margin-preserving subkernel
 and `44` constructible two-block exchange directions. Under native recoloring,
-`22/24` kernel candidates preserved the full response, but a localized failure
-direction `p3` exists: in one `k=3` subgroup, approximately `0.1%` and `1%`
-negative perturbations changed the coloring structure and moved the score from
-`-42,893,983` to `-43,988,761`. The external reproduction package is still
-pending.
+`22/24` kernel candidates preserved the full response. The `p3` direction has a
+one-sided structure: positive perturbations preserved the full response in
+`44/44` trials, while negative perturbations preserved it in `0/44` trials, and
+a negative transfer of only `1` unit of work already triggered a coloring
+structure switch in the `k=3` subgroup. The external reproduction package is
+still pending.
