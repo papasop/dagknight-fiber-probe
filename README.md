@@ -10,7 +10,10 @@ The mathematical object is a response map
     R_Pi: M -> O_Pi
     ker DR_Pi(x) subset T_x M
 
-A kernel direction is therefore a tangent direction in the input state space.
+This response map can be read as a fiber-bundle projection: M is the base,
+O_Pi is the response space, and ker DR_Pi is the vertical subbundle. A kernel
+direction is therefore a tangent direction in the input state space.
+
 The condition DR_Pi(x) v = 0 means first-order response invariance. Whether a
 finite displacement along such a direction preserves the measured response is a
 separate check, and is reported separately below.
@@ -44,10 +47,10 @@ Until those materials are committed, the correct status is:
 
 DAGKnight computes consensus behavior from structured DAG data, coloring,
 parent selection, ordering metadata, blue work, root work, and voting margins.
-The diagnostic question is whether a selected numerical response map has
-nontrivial tangent directions that leave the response unchanged to first order,
-and whether any of those directions also pass finite-displacement preservation
-checks under the same fixed conditions.
+Any coarse-grained response map has a kernel. The diagnostic question is not
+whether the kernel exists, but whether it is nontrivial, whether it survives
+finite displacements, and whether its directions have a coordinate-level
+interpretation.
 
 This repository tests that question in stages:
 
@@ -172,9 +175,12 @@ Results:
   cases.
 
 Conclusion: p3 has a one-sided boundary. Positive perturbations preserve the
-full response, while negative perturbations fail immediately. The failure is
-triggered by discrete tie-breaking at the reference point, not by a large
-magnitude threshold.
+full response, while negative perturbations fail immediately. The one-sidedness
+comes from the reference point lying exactly on a tie boundary: positive
+perturbations keep the original winner group ahead, while negative
+perturbations let the other group win by hash order. The failure is triggered
+by discrete tie-breaking at the reference point, not by a large magnitude
+threshold.
 
 ## 6.2 Stage V6-r1: Branch-Preservation Certificate
 
@@ -209,9 +215,11 @@ boundary.
 | p3 -31         | -31             | parent switches            | changed              |
 
 Conclusion: finite preservation along the kernel direction can be predicted in
-advance by the parent-selection inequality. The formula comes from native work
-accumulation relations and was then frozen for prediction; it was not fitted to
-the later outcomes.
+advance by the parent-selection inequality. With the candidate set, work
+formulas, and hash order fixed, the remaining degree of freedom is the work
+difference between two candidates; hence the branch condition reduces to a
+single inequality. The formula comes from native work accumulation relations
+and was then frozen for prediction; it was not fitted to the later outcomes.
 
 Boundaries:
 
