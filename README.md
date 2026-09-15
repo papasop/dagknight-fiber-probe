@@ -24,8 +24,9 @@ full-consensus proof.
 
 ## 1. Reproducibility Status
 
-The experiments described here are locally complete, but the repository
-reproducibility package has not yet been published.
+The experiments described here are locally complete, including native Rust
+recoloring, but the repository reproducibility package has not yet been
+published.
 
 Before the status should be read as externally reproducible, the repository
 needs at least:
@@ -40,7 +41,8 @@ needs at least:
 Until those materials are committed, the correct status is:
 
 ```text
-Local experiment complete; repository reproduction package pending.
+Local experiment complete, including native recoloring; repository reproduction
+package pending.
 ```
 
 ## 2. Motivation
@@ -127,19 +129,33 @@ involve more general multiblock linear cancellations.
 
 ## 6. Stage C: Exact `bits` Transfer and Native Recoloring
 
-Status: program prepared; Python precheck passed; native run pending.
+Status: complete locally; repository reproduction package pending.
 
-This stage should test exact discrete work transfer and native conflict-zone
+This stage tests exact discrete work transfer and native conflict-zone
 recoloring. It should not be described as removing all conditioning: historical
 header metadata remains fixed.
 
-Target checks:
+Results:
 
-- exact `bits` transfer rather than only real-valued relaxed work coordinates,
-- native conflict-zone recoloring,
-- preservation or failure of the previously detected kernel directions after
-  that recoloring step,
-- clear recording of negative results if the kernel disappears.
+- Native Rust compiled against a pinned rusty-kaspa commit.
+- Native replay consistency: `246/246`.
+- Kernel candidates preserving the full decision-margin and score response:
+  `22/24`.
+- Kernel candidates preserving `k=0..40` subgroup decisions: `24/24`.
+- Native rank remained `14`: `24/24`.
+- Final selected parent remained unchanged: `24/24`.
+- Non-kernel controls changed the full response: `2/2`.
+- Failure cases: `2/24`, both from negative perturbations along the `p3`
+  direction.
+  - Perturbation magnitudes: approximately `0.1%` and `1%`.
+  - Boundary location: one `k=3` subgroup.
+  - Observed score changed from `-42,893,983` to `-43,988,761`.
+  - The coloring structure changed.
+- Full raw-ordering consistency was not established: baseline reruns also
+  showed ordering changes.
+
+Conclusion: the conditional kernel mostly survives native recoloring, but it
+has a localized failure boundary in the `p3` direction.
 
 ## 7. Stage D: Valid-Block Constraints and Full Consensus Check
 
@@ -192,13 +208,14 @@ dynamical structure.
 This repository does not currently prove that:
 
 - the result holds on mainnet data,
-- the current stage has been rerun in Rust native code,
 - the perturbations correspond to valid on-chain blocks,
 - the kernel survives after fixed coloring or historical metadata assumptions
   are removed,
 - the result implies a consensus optimization,
 - `G` or `d_c` has been constructed,
-- a fiber-bundle feasibility layer is justified.
+- a fiber-bundle feasibility layer is justified,
+- the `47`-dimensional kernel remains a `47`-dimensional kernel under the full
+  recolored map; that dimension was not recomputed in this round.
 
 These are open boundaries, not hidden assumptions.
 
@@ -244,7 +261,7 @@ dagknight-fiber-probe/
 | --- | --- | --- |
 | A | Local complete; repo package pending | Time-difference response and 100-seed check |
 | B | Local complete; repo package pending | Fixed-coloring UMC conditional kernel |
-| C | Program prepared; Python precheck passed; native pending | Exact `bits` transfer and native conflict-zone recoloring |
+| C | Local complete; repo package pending | Exact `bits` transfer and native conflict-zone recoloring |
 | D | Not started | Valid-block constraints and full consensus check |
 
 ## 15. One-Sentence Summary
@@ -253,5 +270,9 @@ Local diagnostics have found a conditional UMC response kernel beyond
 timestamp-origin freedom: in one fixed-coloring baseline context, the `271 x 92`
 Jacobian has a `47`-dimensional kernel stable across three numerical
 tolerances, including a `6`-dimensional sufficient margin-preserving subkernel
-and `44` constructible two-block exchange directions; the external
-reproduction package is still pending.
+and `44` constructible two-block exchange directions. Under native recoloring,
+`22/24` kernel candidates preserved the full response, but a localized failure
+direction `p3` exists: in one `k=3` subgroup, approximately `0.1%` and `1%`
+negative perturbations changed the coloring structure and moved the score from
+`-42,893,983` to `-43,988,761`. The external reproduction package is still
+pending.
