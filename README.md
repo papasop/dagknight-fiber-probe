@@ -2,156 +2,207 @@
 
 ## 0. What This Is
 
-`dagknight-fiber-probe` is a diagnostic repository for studying whether
-DAGKnight consensus-response computations contain nontrivial kernel directions:
-directions in input or response space that preserve the measured consensus
-response under a fixed set of constraints.
+`dagknight-fiber-probe` is a diagnostic repository for studying conditional
+kernel directions in DAGKnight-style consensus-response computations.
 
-The current focus is not mainnet performance, block validity, or consensus
-optimization. The focus is kernel diagnostics: identify, replay, and interpret
-response-preserving directions under controlled conditions.
+The mathematical object is a response map
 
-## 1. Motivation
+```text
+R_Pi: M -> O_Pi
+ker DR_Pi(x) subset T_x M
+```
+
+A kernel direction is therefore a tangent direction in the input state space.
+The condition `DR_Pi(x) v = 0` means first-order response invariance. Whether a
+finite displacement along such a direction preserves the measured response is a
+separate check, and is reported separately below.
+
+The current research claim is narrow: local experiments found a conditional
+response kernel related to UMC voting that is not just the timestamp-origin
+freedom. This is not yet a mainnet result, a valid-block transformation, or a
+full-consensus proof.
+
+## 1. Reproducibility Status
+
+The experiments described here are locally complete, but the repository
+reproducibility package has not yet been published.
+
+Before the status should be read as externally reproducible, the repository
+needs at least:
+
+- runnable scripts, dependencies, and one launch command,
+- the frozen response protocol, input data, and data provenance,
+- `summary.json`, Jacobian artifacts, kernel bases, and finite-displacement
+  results,
+- pinned upstream commits, file SHA-256 hashes, and runtime environment notes,
+- license files and license notes for any inherited code or data.
+
+Until those materials are committed, the correct status is:
+
+```text
+Local experiment complete; repository reproduction package pending.
+```
+
+## 2. Motivation
 
 DAGKnight computes consensus behavior from structured DAG data, coloring,
 parent selection, ordering metadata, blue work, root work, and voting margins.
-If the response map has a nontrivial kernel, then there may be internal
-redistribution directions that leave selected consensus responses unchanged.
+The diagnostic question is whether a selected numerical response map has
+nontrivial tangent directions that leave the response unchanged to first order,
+and whether any of those directions also pass finite-displacement preservation
+checks under the same fixed conditions.
 
-This repository tests that possibility in stages:
+This repository tests that question in stages:
 
-- first under a simple time-translation kernel,
-- then under a fixed-coloring UMC conditional response kernel,
-- later, if the evidence survives, under less constrained consensus settings.
+- first under a simple time-difference response where timestamp-origin freedom
+  is expected,
+- then under a fixed-coloring UMC conditional response,
+- later, under exact `bits` transfer and native conflict-zone recoloring,
+- finally, under valid-block constraints and fuller consensus checks.
 
-## 2. Modification 1: Kernel Diagnostics
+## 3. Tested Coordinates and Response Map
 
-### Goal
+The currently reported UMC conditional test uses:
 
-Detect and explain kernel directions in DAGKnight-style response maps.
+- `x`: 92 positive real-valued relaxed work coordinates for participating
+  voting blocks,
+- unit convention: each coordinate is divided by the frozen original conflict
+  root work,
+- `R_16`: all recorded per-vote decision margins for six subgroups at `k=16`,
+  final scores, total work, and root work,
+- fixed inputs: topology, historical parent selection, coloring, ordering
+  metadata, and archived context values,
+- local validity region: the branch where vote signs and discrete ordering
+  choices remain unchanged.
 
-### Object
+The test is therefore about preservation of numerical margins and related work
+coordinates. It is not merely detecting a small flat region in Boolean vote
+outputs.
 
-The object of study is a conditional response map derived from native replay
-data and structured consensus-response features.
+## 4. Stage A: Time-Difference Response and 100-Seed Check
 
-### Logical Layer
+Status: local experiment complete; repository reproduction package pending.
 
-This is a diagnostic layer over replayed consensus data. It is not a
-replacement for consensus logic, and it does not claim that every kernel
-direction corresponds to a valid on-chain block perturbation.
-
-### Deliverables
-
-- reproducible replay checks,
-- rank and kernel-dimension reports,
-- finite-displacement tests in positive and negative kernel directions,
-- attribution of kernel basis directions,
-- interpretable exchange directions when available.
-
-### Success Criteria
-
-A diagnostic stage is considered successful only when:
-
-- native replay is consistent,
-- rank and kernel dimensions are stable across tolerances,
-- finite displacements remain response-preserving,
-- kernel directions admit a clear interpretation,
-- the limitations of the conditioning assumptions are explicitly stated.
-
-### Current Status
-
-#### Stage 1: Time-Translation Kernel (Complete)
+Results:
 
 - `n=32`, `m=62`, `rank=31`, `kernel_dimension=1`
 - Kernel direction: common timestamp translation
 - `100/100` seeds consistent
-- Kernel dimension after fixing the time anchor: `0/100`
+- After anchoring the timestamp origin, all `100/100` samples had kernel
+  dimension `0`
 
-#### Stage 2: UMC Conditional Response Kernel (Complete)
+This stage identifies and then removes the expected timestamp-origin freedom.
 
-- Native replay: `246/246` consistent
-- Fixed `k=16`: `x=92`, `response=271`, `rank=45`, `kernel=47`
-- Three tolerance levels: kernel dimension remains `47`
+## 5. Stage B: Fixed-Coloring UMC Conditional Kernel
+
+Status: local experiment complete; repository reproduction package pending.
+
+Results:
+
+- Python integer replay is consistent with the archived native results:
+  `246/246`
+- Single baseline context at fixed `k=16`:
+  `x=92`, `response=271`, `rank=45`, `kernel=47`
+- Three numerical tolerance levels give the same kernel dimension: `47`
 - Positive and negative finite displacements along main kernel directions:
   `94/94` passed
-- Cross-`k=0..40` margin-preserving subkernel: `6` dimensions
-- Positive and negative finite displacements in the subkernel: `12/12` passed
-- Interpretable two-block exchange directions: `44`
+- Cross-`k=0..40` margin-preserving sufficient linear-constraint subkernel:
+  `6` dimensions
+- Positive and negative finite displacements in that subkernel: `12/12` passed
+- Independently constructible two-block work-exchange directions inside the
+  main kernel: `44`
 
-#### Stage 3: Remove Fixed Coloring (Todo)
+The precise meaning of the headline numbers is:
 
-The next target is to test whether the kernel survives beyond the current
-conditioning assumptions.
+| Number | Meaning |
+| --- | --- |
+| `47` | Dimension of the kernel of the `271 x 92` numerical Jacobian at fixed `k=16` in one baseline context |
+| `6` | Dimension of a sufficient linear-constraint subkernel that preserves recorded margins across `k=0..40` colorings |
+| `44` | Independent two-block work-exchange directions constructible from equal-coefficient columns inside the main kernel |
 
-Current conditioning:
+The `6`-dimensional subkernel is not a derivative with respect to the integer
+parameter `k`. These numbers should not be added. The full `47`-dimensional
+main kernel is also not fully explained by two-block exchanges; some directions
+involve more general multiblock linear cancellations.
 
-- fixed coloring,
-- fixed parent selection,
-- fixed ordering metadata.
+## 6. Stage C: Exact `bits` Transfer and Native Recoloring
 
-## 3. Modification 2: Critical Scale Selection
+Status: program prepared; Python precheck passed; native run pending.
 
-This stage is not complete.
+This stage should test exact discrete work transfer and native conflict-zone
+recoloring. It should not be described as removing all conditioning: historical
+header metadata remains fixed.
 
-The intended question is whether kernel behavior changes at identifiable
-critical scales of DAG structure, voting margin, or selected `k` values.
+Target checks:
 
-## 4. Modification 3: Zero-Cost Evolution
+- exact `bits` transfer rather than only real-valued relaxed work coordinates,
+- native conflict-zone recoloring,
+- preservation or failure of the previously detected kernel directions after
+  that recoloring step,
+- clear recording of negative results if the kernel disappears.
 
-This stage is not complete.
+## 7. Stage D: Valid-Block Constraints and Full Consensus Check
 
-The intended question is whether a zero-cost property can be defined for
-response-preserving evolution directions, without overstating the result as a
-valid chain transition or consensus optimization.
+Status: not started.
 
-## 5. Logical Dependencies
+This stage would test whether any response-preserving direction corresponds to
+a valid block-level transformation under fuller consensus constraints.
 
-The current evidence depends on the following sequence:
+## 8. Audit Completion vs Positive Finding
 
-1. Native replay consistency.
-2. Construction of the conditional response matrix.
-3. Rank and kernel computation.
-4. Finite-displacement validation.
-5. Cross-`k` margin-preserving subkernel extraction.
-6. Kernel-basis attribution.
-7. Interpretation of two-block exchange directions.
+These are separate outcomes.
 
-Later claims require earlier stages to remain valid when conditioning
-assumptions are relaxed.
+An audit is complete when:
 
-## 6. Physical Interpretation of Kernel Directions
+- the data are frozen and complete,
+- scripts and dependencies are runnable by an external reader,
+- rank, kernel, and displacement computations are reproducible,
+- assumptions and fixed inputs are documented,
+- negative results are recorded rather than hidden.
 
-In the UMC conditional kernel, the observed kernel directions correspond to
-redistribution directions that:
+A positive finding occurs only when, under the declared conditions:
 
-- increase the contribution of block A,
-- decrease the contribution of block B,
-- preserve voting margins,
-- preserve final scores,
-- preserve total work,
-- preserve root work.
+- a nonzero kernel is found,
+- finite-displacement preservation checks pass,
+- the kernel direction has an interpretable coordinate-level explanation.
 
-Under fixed-coloring conditions, this means there are work-redistribution
-directions along which the UMC voting response remains unchanged.
+A zero kernel, or a kernel that fails after recoloring, can still be a
+successful diagnostic audit.
 
-This is a conditional diagnostic result. It is not yet a proof that the same
-directions survive in the full unconstrained consensus computation.
+## 9. Work-Coordinate Interpretation
 
-## 7. Not Proven
+In the fixed-coloring UMC conditional kernel, some kernel directions can be
+interpreted as transferring work contribution between two blocks while
+preserving recorded margins, final scores, total work, and root work.
+
+Other directions are more general multiblock linear cancellations. The current
+evidence establishes a conditional cancellation relation in work coordinates;
+it does not establish a physical process, a valid block transformation, or an
+effective chain transition.
+
+## 10. Exploration Directions Not Yet Implemented
+
+Critical-scale selection and zero-cost evolution remain exploration directions.
+They are not implemented by the current kernel diagnostics, and the existence
+of the kernel does not by itself construct `G`, `d_c`, or any downstream
+dynamical structure.
+
+## 11. Not Proven
 
 This repository does not currently prove that:
 
 - the result holds on mainnet data,
-- the Rust native code has been rerun in the current stage,
+- the current stage has been rerun in Rust native code,
 - the perturbations correspond to valid on-chain blocks,
-- the kernel survives after fixed coloring is removed,
+- the kernel survives after fixed coloring or historical metadata assumptions
+  are removed,
 - the result implies a consensus optimization,
-- `G` or `d_c` has been constructed.
+- `G` or `d_c` has been constructed,
+- a fiber-bundle feasibility layer is justified.
 
 These are open boundaries, not hidden assumptions.
 
-## 8. What This Repository Does Not Do
+## 12. What This Repository Does Not Do
 
 This repository does not:
 
@@ -160,38 +211,47 @@ This repository does not:
 - claim a production optimization,
 - claim a live network exploit,
 - claim that kernel directions are automatically valid block operations,
-- construct a full fiber bundle model of DAGKnight consensus.
+- claim that all kernel directions are two-block exchanges.
 
-Terms such as rank-one generator, kernel, image, and `Im B_c` are used in their
-linear-algebraic sense.
+## 13. Expected Repository Structure
 
-## 9. Repository Structure
+The repository still needs the reproduction package. The expected structure is:
 
-The repository is expected to contain:
+```text
+dagknight-fiber-probe/
+  README.md
+  LICENSE
+  requirements.txt
+  scripts/
+  data/
+    frozen_protocol/
+    inputs/
+    provenance/
+  results/
+    summary.json
+    jacobian/
+    kernel_basis/
+    finite_displacements/
+  docs/
+    assumptions.md
+    license_notes.md
+    reproduction.md
+```
 
-- replay scripts and native replay summaries,
-- response-matrix construction code,
-- rank and kernel diagnostics,
-- finite-displacement validation scripts,
-- kernel-basis attribution artifacts,
-- cross-`k` subkernel reports,
-- documentation of assumptions and non-claims.
-
-## 10. Roadmap
+## 14. Roadmap
 
 | Stage | Status | Description |
 | --- | --- | --- |
-| 1 | Complete | Time-translation kernel |
-| 2 | Complete | 100-seed consistency check |
-| 3 | Complete | Kernel-basis attribution |
-| 4 | Complete | UMC conditional kernel |
-| 5 | Todo | Remove fixed coloring |
-| 6 | Todo | Test full consensus response |
-| 7 | Waiting | Decide whether a fiber-bundle feasibility layer is justified |
+| A | Local complete; repo package pending | Time-difference response and 100-seed check |
+| B | Local complete; repo package pending | Fixed-coloring UMC conditional kernel |
+| C | Program prepared; Python precheck passed; native pending | Exact `bits` transfer and native conflict-zone recoloring |
+| D | Not started | Valid-block constraints and full consensus check |
 
-## 11. One-Sentence Summary
+## 15. One-Sentence Summary
 
-Under fixed-coloring UMC conditions, DAGKnight response diagnostics exhibit a
-stable `47`-dimensional kernel, including a `6`-dimensional margin-preserving
-subkernel and `44` interpretable two-block exchange directions; this is a
-controlled conditional result, not yet a mainnet or full-consensus proof.
+Local diagnostics have found a conditional UMC response kernel beyond
+timestamp-origin freedom: in one fixed-coloring baseline context, the `271 x 92`
+Jacobian has a `47`-dimensional kernel stable across three numerical
+tolerances, including a `6`-dimensional sufficient margin-preserving subkernel
+and `44` constructible two-block exchange directions; the external
+reproduction package is still pending.
